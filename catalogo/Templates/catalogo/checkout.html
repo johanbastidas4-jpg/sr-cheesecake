@@ -1,0 +1,32 @@
+<h1>Confirmar pedido</h1>
+
+<p><a href="{% url 'ver_carrito' %}">Volver al carrito</a></p>
+
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<h2>Resumen del carrito</h2>
+<ul>
+    {% for item in items %}
+        <li>
+            {{ item.cantidad }} x {{ item.producto.nombre }} - ${{ item.subtotal }}
+        </li>
+    {% endfor %}
+</ul>
+<p><strong>Total: ${{ total }}</strong></p>
+
+<h2>Datos del cliente</h2>
+<form method="post">
+    {% csrf_token %}
+    <label>Nombre completo:</label><br>
+    <input type="text" name="nombre" value="{{ nombre|default:'' }}"><br><br>
+
+    <label>Teléfono:</label><br>
+    <input type="text" name="telefono" value="{{ telefono|default:'' }}"><br><br>
+
+    <label>Dirección:</label><br>
+    <textarea name="direccion">{{ direccion|default:'' }}</textarea><br><br>
+
+    <button type="submit">Confirmar pedido</button>
+</form>

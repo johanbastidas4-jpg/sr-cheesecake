@@ -1,0 +1,9 @@
+<h1>Pedido confirmado</h1>
+
+<p>Gracias, {{ pedido.nombre_cliente }}. Tu pedido ha sido registrado con el número <strong>#{{ pedido.id }}</strong>.</p>
+
+<p>Total: ${{ pedido.total }}</p>
+
+<p>
+    <a href="{% url 'lista_productos' %}">Volver al catálogo</a>
+</p>

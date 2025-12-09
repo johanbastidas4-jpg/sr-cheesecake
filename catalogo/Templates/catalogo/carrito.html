@@ -1,0 +1,34 @@
+<h1>Carrito de compras</h1>
+
+<p><a href="{% url 'lista_productos' %}">Volver al catálogo</a></p>
+
+{% if items %}
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Subtotal</th>
+            <th>Acciones</th>
+        </tr>
+        {% for item in items %}
+            <tr>
+                <td>{{ item.producto.nombre }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>${{ item.subtotal }}</td>
+                <td>
+                    <a href="{% url 'eliminar_del_carrito' item.producto.id %}">Eliminar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2"><strong>Total</strong></td>
+            <td colspan="2"><strong>${{ total }}</strong></td>
+        </tr>
+    </table>
+
+    <p>
+        <a href="{% url 'checkout' %}">Continuar con el pedido</a>
+    </p>
+{% else %}
+    <p>Tu carrito está vacío.</p>
+{% endif %}

@@ -1,0 +1,18 @@
+<h1>Catálogo de Productos</h1>
+<p>
+    <a href="{% url 'ver_carrito' %}">Ver carrito</a>
+</p>
+
+<ul>
+    {% for producto in productos %}
+        <li>
+            <strong>{{ producto.nombre }}</strong> - ${{ producto.precio }}
+            |
+            <a href="{% url 'detalle_producto' producto.id %}">Ver detalle</a>
+            |
+            <a href="{% url 'agregar_al_carrito' producto.id %}">Agregar al carrito</a>
+        </li>
+    {% empty %}
+        <li>No hay productos disponibles.</li>
+    {% endfor %}
+</ul>
