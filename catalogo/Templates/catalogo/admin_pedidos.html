@@ -1,0 +1,86 @@
+{% extends "catalogo/base_panel.html" %}
+
+
+{% block title %}Pedidos | Panel Administrativo{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h3 class="mb-3">Pedidos</h3>
+
+    <form method="get" class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" name="fecha_inicio" class="form-control"
+               value="{{ fecha_inicio }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Fecha fin</label>
+            <input type="date" name="fecha_fin" class="form-control"
+               value="{{ fecha_fin }}">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Estado del pedido</label>
+            <select name="estado" class="form-select">
+                <option value="">Todos</option>
+                <option value="pendiente" {% if estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                <option value="cancelado" {% if estado == "cancelado" %}selected{% endif %}>Cancelado</option>
+                <option value="entregado" {% if estado == "entregado" %}selected{% endif %}>Entregado</option>
+            </select>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn-primary-custom w-100">Filtrar</button>
+        </div>
+
+    </form>
+
+
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Método</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>#{{ pedido.id }}</td>
+                <td>{{ pedido.nombre_cliente }}</td>
+                <td>{{ pedido.creado_en|date:"d/m/Y H:i" }}</td>
+                <td>${{ pedido.total}} COP</td>
+                <td>{{ pedido.metodo_pago }}</td>
+
+                <td>
+                    {% if pedido.estado == "entregado" %}
+                        <span class="badge bg-success">Entregado</span>
+                    {% elif pedido.estado == "pendiente" %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% else %}
+                        <span class="badge bg-danger">Cancelado</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{% url 'admin_detalle_pedido' pedido.id %}" class="btn btn-sm btn-primary-custom">
+                        Ver
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <a href="{% url 'panel_inicio' %}" class="btn btn-light-custom">Volver al panel</a>
+</div>
+{% endblock %}

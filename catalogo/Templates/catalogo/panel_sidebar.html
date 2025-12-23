@@ -1,0 +1,58 @@
+{% load static %}
+
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white sidebar"
+     style="width: 250px; height: 100vh; position: fixed; top: 0; left: 0;">
+
+        <div class="text-center mt-3">
+            
+        </div>
+    <a href="{% url 'panel_inicio' %}" class="d-flex align-items-center mb-3 text-white text-decoration-none">
+        <span class="fs-4"><img src="{% static 'panel/img/logo_blanco.png' %}" alt="Sr. Cheesecake" style="width: 40px;"></i> Panel Admin</span>
+        
+
+    </a>
+
+    <hr class="text-secondary">
+
+    <ul class="nav nav-pills flex-column mb-auto">
+
+        <li class="nav-item">
+            <a href="{% url 'panel_inicio' %}" class="nav-link text-white">
+                <i class="bi bi-house-door me-2"></i> Dashboard
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'admin_pedidos' %}" class="nav-link text-white">
+                <i class="bi bi-receipt me-2"></i> Pedidos
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'admin_inventario' %}" class="nav-link text-white">
+                <i class="bi bi-box-seam me-2"></i> Inventario
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'admin_reportes' %}" class="nav-link text-white">
+                <i class="bi bi-bar-chart-line me-2"></i> Reportes
+            </a>
+        </li>
+
+    </ul>
+
+    <hr class="text-secondary">
+
+    <div class="text-white small">
+        Bienvenido(a), <strong>{{ request.user.username }}</strong>
+    </div>
+    
+    <form action="{% url 'admin_logout' %}" method="post" class="mt-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger w-100">
+        <i class="bi bi-box-arrow-right me-2"></i> Salir
+    </button>
+</form>
+
+</div>

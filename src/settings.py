@@ -41,7 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'catalogo',
+    'import_export',
+
 ]
 
 MIDDLEWARE = [
@@ -66,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'catalogo.context_processors.cart_count'
             ],
         },
     },
@@ -112,8 +116,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
+LANGUAGE_CODE = 'es-co'   # español Colombia
+USE_THOUSAND_SEPARATOR = True
+DECIMAL_SEPARATOR = ','
+THOUSAND_SEPARATOR = '.'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -135,3 +141,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
+
+WOMPI_PUBLIC_KEY = "pub_test_xxxxxxxx"
+WOMPI_CHECKOUT_URL = "https://checkout.wompi.co/l/abc123"
+
+LOGIN_URL = 'admin_login'
+LOGIN_REDIRECT_URL = 'panel_inicio'
+LOGOUT_REDIRECT_URL = 'admin_login'

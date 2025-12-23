@@ -1,0 +1,43 @@
+{% extends "catalogo/base_panel.html" %}
+
+
+{% block title %}Inventario | Panel Admin{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h3 class="mb-3">Inventario</h3>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Editar</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.nombre }}</td> 
+                <td>${{ producto.precio}} COP</td>
+                <td>
+                    {% if producto.inventario %}
+                        {{ producto.inventario.cantidad }}
+                    {% else %}
+                        Sin inventario configurado
+                    {% endif %}
+                </td>
+                <td> <a href="{% url 'editar_inventario' producto.id %}" class="btn btn-sm btn">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </td>    
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'panel_inicio' %}" class="btn btn-light-custom">Volver al panel</a>
+</div>
+{% endblock %}

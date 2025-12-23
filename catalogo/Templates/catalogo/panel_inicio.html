@@ -1,0 +1,64 @@
+{% extends "catalogo/base_panel.html" %}
+
+{% block title %}Panel Administrativo | Sr. Cheesecake{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">Panel Administrativo</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Total ventas</h4>
+                <p class="fs-4">${{ total_ventas }} COP</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Total pedidos</h4>
+                <p class="fs-4">{{ total_pedidos }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Ticket promedio</h4>
+                <p class="fs-4">${{ promedio_pedido|floatformat:2 }} COP</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-3">
+        <a href="{% url 'admin_pedidos' %}" class="btn btn-primary-custom">Ver pedidos</a>
+        <a href="{% url 'admin_inventario' %}" class="btn btn-light-custom">Inventario</a>
+        <a href="{% url 'admin_reportes' %}" class="btn btn-light-custom">Reportes</a>
+        
+    </div>
+
+    <!-- Productos más vendidos -->
+    <h4 class="mt-4 mb-3">Top 5 productos más vendidos</h4>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad vendida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in productos_mas_vendidos %}
+            <tr>
+                <td>{{ p.producto__nombre }}</td>
+                <td>{{ p.total_vendido }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" class="text-center">No hay ventas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

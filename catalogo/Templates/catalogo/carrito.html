@@ -1,34 +1,122 @@
-<h1>Carrito de compras</h1>
+{% extends "base.html" %}
+{% load static %}
 
-<p><a href="{% url 'lista_productos' %}">Volver al catálogo</a></p>
+{% load l10n %}
 
-{% if items %}
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Subtotal</th>
-            <th>Acciones</th>
-        </tr>
-        {% for item in items %}
-            <tr>
-                <td>{{ item.producto.nombre }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>${{ item.subtotal }}</td>
-                <td>
-                    <a href="{% url 'eliminar_del_carrito' item.producto.id %}">Eliminar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="2"><strong>Total</strong></td>
-            <td colspan="2"><strong>${{ total }}</strong></td>
-        </tr>
-    </table>
+{% block title %}Carrito | Sr. Cheesecake{% endblock %}
 
-    <p>
-        <a href="{% url 'checkout' %}">Continuar con el pedido</a>
-    </p>
-{% else %}
-    <p>Tu carrito está vacío.</p>
-{% endif %}
+{% block content %}
+<div class="container my-5">
+
+    <!-- Link continuar comprando -->
+    <div class="mb-3">
+        <a href="{% url 'lista_productos' %}" class="btn btn-light-custom">← Continuar comprando</a>
+    </div>
+
+    <h2 class="section-title mb-4"> Carrito de Compras</h2>
+
+    {% if items %}
+    <div class="row">
+        <!-- Lado izquierdo: productos -->
+        <div class="col-md-8">
+            {% for item in items %}
+            <div class="card product-card mb-3 shadow-sm">
+                <div class="row g-0 align-items-center">
+                    
+                    <!-- Imagen del producto -->
+                    <div class="col-md-3">
+                        {% if item.producto.imagen %}
+                        <img src="{{ item.producto.imagen.url }}" class="img-fluid rounded-start" alt="{{ item.producto.nombre }}">
+                        {% else %}
+                        <img src="{% static 'catalogo/img/no-image.png' %}" class="img-fluid rounded-start" alt="Sin imagen">
+                        {% endif %}
+                    </div>
+
+                    <!-- Info del producto -->
+                    <div class="col-md-7">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.producto.nombre }}</h5>
+                            <p class="price-detail">${{ item.producto.precio|localize}} COP por unidad</p>
+
+                            <!-- Botones cantidad con validación de stock -->
+                            <div class="d-flex align-items-center">
+                                <!-- Botón para decrementar -->
+                                    <a href="{% url 'decrementar_cantidad' item.producto.id %}" 
+                                        class="btn btn-outline-secondary btn-sm">−</a>
+
+                                <!-- Cantidad actual -->
+                                <span class="mx-2">{{ item.cantidad }}</span>
+
+                                <!-- Botón para incrementar -->
+                                    {% if item.cantidad < item.producto.inventario.cantidad %}
+                                        <a href="{% url 'incrementar_cantidad' item.producto.id %}" 
+                                        class="btn btn-outline-secondary btn-sm">+</a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary btn-sm" disabled>+</button>
+                                    {% endif %}
+                            </div>
+
+                            <!-- Mostrar stock disponible -->
+                             <p class="small text-muted mt-1">Disponibles: {{ item.producto.inventario.cantidad }}</p>
+
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="col-md-2 text-end pe-3">
+                        <a href="{% url 'eliminar_item' item.producto.id %}" class="btn btn-outline-danger btn-sm mb-2">Quitar</a>
+                        <p class="fw-bold">Subtotal: ${{ item.subtotal|localize }} COP</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Lado derecho: resumen -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Resumen del pedido</h4>
+                    <p>Subtotal: ${{ total|localize }} COP </p>
+                    <p>Envío: 
+                        {% if total >= 60000 %}
+                            <span class="text-success">Gratis</span>
+                        {% else %}
+                            ${{11000|localize}} COP
+                        {% endif %}
+                    </p>
+                    <p><strong> Total: 
+                        {% if total >= 60000 %}
+                            ${{ total|localize}} COP
+                        {% else %}
+                            ${{ total|add:"11000"|localize}} COP
+                        {% endif %}
+                    </strong></p>
+
+                    {% if total >= 60000 %}
+                        <p class="text-success small">🎉 Envío gratis por compras mayores a $60.000 COP</p>
+                    {% else %}
+                        <div class= "alert alert-warning mt-3" role="alert">
+                            Te faltan <strong>${{ faltante_envio|localize}} </strong> COP para obtener envío gratis.
+                        </div>
+                    {% endif %} 
+
+                    <a href="{% url 'checkout' %}" class="btn btn-primary-custom w-100 mt-3">
+                        Confirmar pedido
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="text-center">
+        <p>No hay productos en tu carrito.</p>
+        <a href="{% url 'lista_productos' %}" class="btn btn-primary-custom">Ver productos</a>
+    </div>
+    {% endif %}
+
+    
+
+</div>
+{% endblock %}

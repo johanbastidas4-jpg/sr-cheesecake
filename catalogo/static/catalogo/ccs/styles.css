@@ -1,0 +1,138 @@
+/* =========================
+   VARIABLES DE MARCA
+========================= */
+:root {
+    --primary: #c81a1a;
+    --secondary: #39170e;
+    --background: #fffbf3;
+    --text-dark: #333333;
+}
+
+/* =========================
+   ESTILOS GENERALES
+========================= */
+body {
+    background-color: var(--background);
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark);
+}
+
+/* Marca / Logo */
+.brand-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--background);
+}
+
+.section-title {
+    font-weight: 800;
+    color: #39170e;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+    color: var(--secondary);
+}
+
+h5 {
+    font-family: 'Playfair Display', serif;
+    color: var(--background);
+}
+
+/* =========================
+   NAVBAR
+========================= */
+.navbar-custom {
+    background-color: var(--primary);
+}
+
+.navbar-custom .navbar-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.navbar-custom .navbar-brand:hover {
+    color: #ffdddd;
+}
+
+/* Botones principales */
+.btn-primary-custom {
+    background-color: #c81a1a;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary-custom:hover {
+    background-color: #a01515;
+    color: #fff;
+}
+
+/* Botones secundarios */
+.btn-secondary-custom {
+    background-color: #39170e;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+/* Botones neutros */
+.btn-light-custom {
+    background-color: #fffbf3;
+    border: 1px solid #ddd;
+    color: #39170e;
+}
+
+/* =========================
+   TARJETAS DE PRODUCTO
+========================= */
+.product-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.product-card img {
+    height: 220px;
+    object-fit: cover;
+}
+
+.product-card .card-body {
+    padding: 15px;
+}
+
+.price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #c81a1a;
+}
+
+.price-detail {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #c81a1a;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+.footer-custom {
+    background-color: var(--secondary);
+    color: #fff;
+}
+
+
+

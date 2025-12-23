@@ -1,32 +1,120 @@
-<h1>Confirmar pedido</h1>
+{% extends "base.html" %}
+{% load l10n %}
 
-<p><a href="{% url 'ver_carrito' %}">Volver al carrito</a></p>
+{% block title %}Checkout | Sr. Cheesecake{% endblock %}
 
-{% if error %}
-    <p style="color:red;">{{ error }}</p>
-{% endif %}
+{% block content %}
+<div class="container my-5">
+<div class="mb-3">
+        <a href="{% url 'ver_carrito' %}" class="btn btn-light-custom">← Volver al carrito</a>
+    </div>
+    <h2 class="section-title mb-4">Finalizar pedido</h2>
+    
+    <!-- Mensaje de error -->
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
 
-<h2>Resumen del carrito</h2>
-<ul>
-    {% for item in items %}
-        <li>
-            {{ item.cantidad }} x {{ item.producto.nombre }} - ${{ item.subtotal }}
-        </li>
-    {% endfor %}
-</ul>
-<p><strong>Total: ${{ total }}</strong></p>
+    <div class="row">
+        <!-- Lado izquierdo: formulario -->
+        <div class="col-md-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="mb-3">Datos del cliente</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre completo</label>
+                            <input type="text" name="nombre" id="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" id="telefono" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección de entrega - Unidad - Nro. Apto </label>
+                            <textarea name="direccion" id="direccion" class="form-control" rows="2" required></textarea>
+                        </div>
 
-<h2>Datos del cliente</h2>
-<form method="post">
-    {% csrf_token %}
-    <label>Nombre completo:</label><br>
-    <input type="text" name="nombre" value="{{ nombre|default:'' }}"><br><br>
+                        <h4 class="mt-4">Métodos de pago</h4>
 
-    <label>Teléfono:</label><br>
-    <input type="text" name="telefono" value="{{ telefono|default:'' }}"><br><br>
+                        <div class="card p-3 mb-3">
+                            <label class="d-flex align-items-center mb-2">
+                                <input type="radio" name="metodo_pago" value="Efectivo" class="me-2">
+                                💵 Efectivo contra entrega
+                            </label>
 
-    <label>Dirección:</label><br>
-    <textarea name="direccion">{{ direccion|default:'' }}</textarea><br><br>
+                            <label class="d-flex align-items-center mb-2">
+                                <input type="radio" name="metodo_pago" value="Datáfono" class="me-2">
+                                💳 Datáfono (tarjeta al recibir)
+                            </label>
 
-    <button type="submit">Confirmar pedido</button>
-</form>
+                            <label class="d-flex align-items-center mb-2">
+                                <input type="radio" name="metodo_pago" value="Transferencia" class="me-2">
+                                Transferencia bancaria
+                            </label>
+
+                            <label class="d-flex align-items-center">
+                                <input type="radio" name="metodo_pago" value="Wompi" class="me-2">
+                                Tarjeta débito / crédito / PSE (Wompi)
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom w-100">Confirmar pedido</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lado derecho: resumen del pedido -->
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Resumen del carrito</h4>
+                    <ul class="list-group mb-3">
+                        {% for item in items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ item.producto.nombre }}</strong><br>
+                                <small>Cantidad: {{ item.cantidad }}</small>
+                            </div>
+                            <span>${{ item.subtotal|localize }} COP </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <p>Subtotal: ${{ total|localize }} COP </p>
+                    <p>Envío: 
+                        {% if total >= 60000 %}
+                            <span class="text-success">Gratis</span>
+                        {% else %}
+                            ${{ 11000|localize }} COP
+                        {% endif %}
+                    </p>
+
+                    <hr>
+                    <p>Total: <strong>
+                        {% if total >= 60000 %}
+                            ${{ total|localize }}
+                        {% else %}
+                            ${{ total|add:"11000"|localize }} COP
+                        {% endif %}
+                    </strong></p>
+
+                    
+
+                    {% if total < 60000 %}
+                    <div class="alert alert-warning mt-3" role="alert">
+                        🚚 Te faltan <strong>${{ faltante_envio }}</strong> COP para obtener envío gratis.
+                    </div>
+                    {% else %}
+                    <p class="text-success small">🎉 Envío gratis por compras mayores a $60.000 COP</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

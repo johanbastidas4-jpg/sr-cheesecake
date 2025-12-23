@@ -1,0 +1,84 @@
+{% extends "catalogo/base_panel.html" %}
+
+
+{% block title %}Reportes | Panel Administrativo{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+    <h2 class="mb-4">Reportes del negocio</h2>
+
+    <form method="get" class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" name="fecha_inicio" class="form-control"
+               value="{{ fecha_inicio }}">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Fecha fin</label>
+            <input type="date" name="fecha_fin" class="form-control"
+               value="{{ fecha_fin }}">
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary w-100">Filtrar</button>
+            </div>
+
+    </form>
+
+    <!-- Resumen general -->
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Total ventas</h4>
+                <p class="fs-4">${{ total_ventas }} COP</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Total pedidos</h4>
+                <p class="fs-4">{{ total_pedidos }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Ticket promedio</h4>
+                <p class="fs-4">${{ promedio_pedido|floatformat:2 }} COP</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Productos más vendidos -->
+    <h4 class="mt-4 mb-3">Top 5 productos más vendidos</h4>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad vendida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in productos_mas_vendidos %}
+            <tr>
+                <td>{{ p.producto__nombre }}</td>
+                <td>{{ p.total_vendido }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" class="text-center">No hay ventas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'panel_inicio' %}" class="btn btn-light-custom mt-3">Volver al panel</a>
+
+</div>
+{% endblock %}

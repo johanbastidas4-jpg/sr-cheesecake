@@ -31,9 +31,9 @@ class Inventario(models.Model):
 # Create your models here.
 
 class Pedido(models.Model):
-    ESTADOS = [
+    ESTADOS= [
         ('pendiente', 'Pendiente'),
-        ('procesado', 'Procesado'),
+        ('cancelado', 'Cancelado'),
         ('entregado', 'Entregado'),
     ]
 
@@ -44,12 +44,14 @@ class Pedido(models.Model):
     actualizado_en = models.DateTimeField(auto_now=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    metodo_pago = models.CharField(max_length=50, default="No especificado")
+    estado_pago = models.CharField(max_length=20, default="pendiente")  # pendiente, pagado, rechazado
 
     def __str__(self):
         return f"Pedido #{self.id} - {self.nombre_cliente}"
     
 class DetallePedido(models.Model):
-    Pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
     cantidad = models.PositiveIntegerField(default=1)
     precio_unitario = models.DecimalField(max_digits=8, decimal_places=2)
