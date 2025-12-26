@@ -46,6 +46,7 @@ class Pedido(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     metodo_pago = models.CharField(max_length=50, default="No especificado")
     estado_pago = models.CharField(max_length=20, default="pendiente")  # pendiente, pagado, rechazado
+    visto_por_admin = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Pedido #{self.id} - {self.nombre_cliente}"

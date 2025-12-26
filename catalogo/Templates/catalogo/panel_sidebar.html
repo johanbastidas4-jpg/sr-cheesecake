@@ -22,11 +22,15 @@
             </a>
         </li>
 
-        <li>
-            <a href="{% url 'admin_pedidos' %}" class="nav-link text-white">
-                <i class="bi bi-receipt me-2"></i> Pedidos
+        <li> 
+            <a href="{% url 'admin_pedidos' %}" class="nav-link text-white d-flex justify-content-between align-items-center"> 
+                <span> <i class="bi bi-receipt me-2"></i> Pedidos</span> 
+                    {% if nuevos_pedidos > 0 %} 
+                    <span class="badge bg-danger">{{ nuevos_pedidos }}</span> 
+                    {% endif %} 
             </a>
         </li>
+
 
         <li>
             <a href="{% url 'admin_inventario' %}" class="nav-link text-white">

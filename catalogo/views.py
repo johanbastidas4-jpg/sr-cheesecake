@@ -139,6 +139,7 @@ def checkout(request):
             total=total,
             metodo_pago=metodo_pago,
             estado_pago="pendiente",
+            visto_por_admin=False,
         )
 
         # Crear detalles del pedido y actualizar inventario
@@ -305,13 +306,14 @@ def panel_inicio(request):
 
 @user_passes_test(es_admin)
 def admin_pedidos(request):
-    
+    # Marcar todos los pedidos como vistos 
+    Pedido.objects.filter(visto_por_admin=False).update(visto_por_admin=True)
     fecha_inicio = request.GET.get("fecha_inicio")
     fecha_fin = request.GET.get("fecha_fin")
     estado_pago = request.GET.get("estado_pago")
     estado = request.GET.get("estado")
-
     pedidos = Pedido.objects.order_by('-creado_en')
+    
 
     # FILTROS
     if fecha_inicio and fecha_fin:
