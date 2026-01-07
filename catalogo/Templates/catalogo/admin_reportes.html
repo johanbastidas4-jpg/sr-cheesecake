@@ -77,8 +77,39 @@
             {% endfor %}
         </tbody>
     </table>
+    <div class="mb-4 d-flex gap-2">
+
+        <a href="{% url 'exportar_pedidos' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+            class="btn btn-success"
+            onclick="return validarFechasAntesDeExportar()">
+            Exportar pedidos CSV
+        </a>
+
+        <a href="{% url 'exportar_productos' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+            class="btn btn-warning"
+            onclick="return validarFechasAntesDeExportar()">
+            Exportar productos más vendidos
+        </a>
+
+    </div>
 
     <a href="{% url 'panel_inicio' %}" class="btn btn-light-custom mt-3">Volver al panel</a>
 
+
 </div>
+
+<script>
+function validarFechasAntesDeExportar() {
+    const inicio = document.querySelector('input[name="fecha_inicio"]').value;
+    const fin = document.querySelector('input[name="fecha_fin"]').value;
+
+    if (!inicio || !fin) {
+        alert("Debes seleccionar fecha inicio y fecha fin antes de exportar.");
+        return false;
+    }
+    return true;
+}
+</script>
+
 {% endblock %}
+

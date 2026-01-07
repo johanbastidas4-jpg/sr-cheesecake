@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-
+from .views import (reportes, exportar_pedidos_csv, exportar_productos_vendidos_csv)
 
 urlpatterns = [
     path('', views.lista_productos, name='lista_productos'),
@@ -25,6 +25,8 @@ urlpatterns = [
     path('panel/inventario/', views.admin_inventario, name='admin_inventario'),
     path('inventario/editar/<int:producto_id>/', views.editar_inventario, name='editar_inventario'),
     path('panel/reportes/', views.reportes, name='admin_reportes'),
+    path('reportes/exportar-pedidos/', exportar_pedidos_csv, name='exportar_pedidos'), 
+    path('reportes/exportar-productos/', exportar_productos_vendidos_csv, name='exportar_productos'), 
 
 # rutas para login
 

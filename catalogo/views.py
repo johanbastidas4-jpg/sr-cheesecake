@@ -5,7 +5,10 @@ from .cart import Cart
 from .models import Producto, Pedido, DetallePedido
 from django.db.models import Sum, Count, Avg
 from django.contrib.auth.decorators import user_passes_test
-
+from datetime import datetime
+import csv 
+from django.http import HttpResponse
+from django.contrib import messages
 # -------------------------------
 # LOGIN ADMIN
 # -------------------------------
@@ -196,39 +199,108 @@ def checkout(request):
 @user_passes_test(es_admin)
 def reportes(request):
 
+    # Obtener filtros 
     fecha_inicio = request.GET.get("fecha_inicio")
     fecha_fin = request.GET.get("fecha_fin")
-    pedidos = Pedido.objects.all()
 
-    # Si el usuario selecciona un rango de fechas
+    # Base de datos de pedidos 
+    pedidos = Pedido.objects.all().order_by('-creado_en') 
+    
+    # Aplicar filtros si existen 
+    if fecha_inicio and fecha_fin: 
+        pedidos = pedidos.filter(creado_en__date__range=[fecha_inicio, fecha_fin]) 
+        
+    # Cálculos principales 
+    total_ventas = pedidos.aggregate(total=Sum('total'))['total'] or 0 
+    total_pedidos = pedidos.count() 
+    promedio_pedido = pedidos.aggregate(promedio=Avg('total'))['promedio'] or 0 
+    promedio_pedido = round(promedio_pedido, 2) 
+    
+    # Top 5 productos más vendidos 
+    productos_mas_vendidos = ( 
+        DetallePedido.objects.filter(pedido__in=pedidos) 
+        .values('producto__nombre') 
+        .annotate(total_vendido=Sum('cantidad')) 
+        .order_by('-total_vendido')[:5] 
+        ) 
+    
+    contexto = { 
+        'total_ventas': total_ventas, 
+        'total_pedidos': total_pedidos, 
+        'promedio_pedido': promedio_pedido, 
+        'productos_mas_vendidos': productos_mas_vendidos, 
+        'fecha_inicio': fecha_inicio, 'fecha_fin': fecha_fin, 
+        } 
+    
+    
+    return render(request, 'catalogo/admin_reportes.html', contexto)
+
+@user_passes_test(es_admin)
+def exportar_pedidos_csv(request):
+
+    fecha_inicio = request.GET.get("fecha_inicio")
+    fecha_fin = request.GET.get("fecha_fin")
+
+    # Validación obligatoria
+    if not fecha_inicio or not fecha_fin:
+        return HttpResponse("Debe seleccionar un rango de fechas antes de exportar.")
+    
+
+    pedidos = Pedido.objects.all().order_by('-creado_en')
+
     if fecha_inicio and fecha_fin:
         pedidos = pedidos.filter(creado_en__date__range=[fecha_inicio, fecha_fin])
 
-    # Total de ventas
-    total_ventas = pedidos.aggregate(total=Sum('total'))['total'] or 0
-    # Número de pedidos
-    total_pedidos = pedidos.count()
-    # Promedio de pedido
-    promedio_pedido = pedidos.aggregate(promedio=Avg('total'))['promedio'] or 0
-    promedio_pedido = round(promedio_pedido, 2)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="pedidos.csv"'
 
-    # Top 5 productos más vendidos
-    productos_mas_vendidos = (
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['ID', 'Cliente', 'Fecha', 'Estado', 'Total'])
+
+    for p in pedidos:
+        writer.writerow([
+            p.id,
+            p.nombre_cliente,
+            p.creado_en,
+            p.estado,
+            p.total,
+        ])
+
+    return response
+
+@user_passes_test(es_admin)
+def exportar_productos_vendidos_csv(request):
+
+    fecha_inicio = request.GET.get("fecha_inicio")
+    fecha_fin = request.GET.get("fecha_fin")
+
+    # Validación obligatoria
+    if not fecha_inicio or not fecha_fin:
+        return HttpResponse("Debe seleccionar un rango de fechas antes de exportar.")
+    
+
+    pedidos = Pedido.objects.all()
+
+    if fecha_inicio and fecha_fin:
+        pedidos = pedidos.filter(creado_en__date__range=[fecha_inicio, fecha_fin])
+
+    productos = (
         DetallePedido.objects.filter(pedido__in=pedidos)
         .values('producto__nombre')
         .annotate(total_vendido=Sum('cantidad'))
-        .order_by('-total_vendido')[:5]
-    ) 
+        .order_by('-total_vendido')
+    )
 
-    return render(request, 'catalogo/admin_reportes.html', {
-        'total_ventas': total_ventas,
-        'total_pedidos': total_pedidos,
-        'promedio_pedido': promedio_pedido,
-        'productos_mas_vendidos': productos_mas_vendidos,
-        'fecha_inicio': fecha_inicio,
-        'fecha_fin': fecha_fin,
-    })
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="productos_mas_vendidos.csv"'
 
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['Producto', 'Cantidad Vendida'])
+
+    for p in productos:
+        writer.writerow([p['producto__nombre'], p['total_vendido']])
+
+    return response
 
 # -------------------------------
  #PAGOS (WOMPI)
@@ -341,6 +413,7 @@ def admin_detalle_pedido(request, pedido_id):
     if request.method == "POST":
         pedido.estado = request.POST.get("estado")
         pedido.save()
+        messages.success(request, f"El estado del pedido #{pedido.id} fue actualizado correctamente a {pedido.estado} ")
         return redirect('admin_detalle_pedido', pedido_id=pedido.id)
     
     return render(request, 'catalogo/admin_detalle_pedido.html', {
