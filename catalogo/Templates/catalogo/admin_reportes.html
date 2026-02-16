@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container my-4">
 
-    <h2 class="mb-4">Reportes del negocio</h2>
+    <h2 class="mb-4">Estadísticas del negocio</h2>
 
     <form method="get" class="row g-3 mb-4">
 
@@ -77,39 +77,51 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Botones de exportación -->
     <div class="mb-4 d-flex gap-2">
 
-        <a href="{% url 'exportar_pedidos' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+        <a id="btnExportarPedidos" href="{% url 'exportar_pedidos' %}"
             class="btn btn-success"
-            onclick="return validarFechasAntesDeExportar()">
-            Exportar pedidos CSV
+            onclick="return validarFechasAntesDeExportar(event, 'pedidos')">
+            Exportar pedidos Excel
         </a>
 
-        <a href="{% url 'exportar_productos' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
-            class="btn btn-warning"
-            onclick="return validarFechasAntesDeExportar()">
-            Exportar productos más vendidos
+        <a id="btnExportarPdf" href="{% url 'exportar_pedidos_pdf' %}"
+            class="btn btn-danger"
+            onclick="return validarFechasAntesDeExportar(event, 'pdf')">
+            Exportar pedidos PDF
         </a>
 
     </div>
 
-    <a href="{% url 'panel_inicio' %}" class="btn btn-light-custom mt-3">Volver al panel</a>
+    <!-- Validacion antes de exportar -->
+    <script>
+    function validarFechasAntesDeExportar(event, tipo) {
+    event.preventDefault(); // Evita que el enlace se ejecute inmediatamente
 
+    const inicioInput = document.querySelector('input[name="fecha_inicio"]');
+    const finInput = document.querySelector('input[name="fecha_fin"]');
 
-</div>
-
-<script>
-function validarFechasAntesDeExportar() {
-    const inicio = document.querySelector('input[name="fecha_inicio"]').value;
-    const fin = document.querySelector('input[name="fecha_fin"]').value;
+    const inicio = inicioInput ? inicioInput.value : ''; 
+    const fin = finInput ? finInput.value : '';
 
     if (!inicio || !fin) {
         alert("Debes seleccionar fecha inicio y fecha fin antes de exportar.");
         return false;
     }
-    return true;
-}
+
+    const baseUrl = (tipo === 'pedidos') ? "{% url 'exportar_pedidos' %}" : "{% url 'exportar_pedidos_pdf' %}"; 
+    const params = new URLSearchParams({ fecha_inicio: inicio, fecha_fin: fin }); 
+
+    // Redirigir para descargar CSV 
+ 
+    window.location.href = `${baseUrl}?${params.toString()}`; return true; }
+
 </script>
+</div>
+
+
 
 {% endblock %}
 

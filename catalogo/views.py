@@ -9,6 +9,10 @@ from datetime import datetime
 import csv 
 from django.http import HttpResponse
 from django.contrib import messages
+import openpyxl
+from reportlab.platypus import SimpleDocTemplate, Table
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
 # -------------------------------
 # LOGIN ADMIN
 # -------------------------------
@@ -244,32 +248,44 @@ def exportar_pedidos_csv(request):
     # Validación obligatoria
     if not fecha_inicio or not fecha_fin:
         return HttpResponse("Debe seleccionar un rango de fechas antes de exportar.")
-    
 
     pedidos = Pedido.objects.all().order_by('-creado_en')
 
     if fecha_inicio and fecha_fin:
         pedidos = pedidos.filter(creado_en__date__range=[fecha_inicio, fecha_fin])
+    
+    total = pedidos.aggregate(total=Sum("total"))["total"] or 0
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="pedidos.csv"'
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Pedidos"
 
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['ID', 'Cliente', 'Fecha', 'Estado', 'Total'])
+    headers = ["ID", "Cliente", "Fecha", "Total", "Estado"]
+    ws.append(headers)
 
-    for p in pedidos:
-        writer.writerow([
-            p.id,
-            p.nombre_cliente,
-            p.creado_en,
-            p.estado,
-            p.total,
+    for pedido in pedidos:
+        ws.append([
+            pedido.id,
+            pedido.nombre_cliente,
+            str(pedido.creado_en),
+            float(pedido.total),
+            pedido.estado
         ])
 
+    ws.append(["", "", "", "TOTAL:", float(total)])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="Reporte_pedidos.xlsx"'
+
+    wb.save(response)
     return response
 
+
+
 @user_passes_test(es_admin)
-def exportar_productos_vendidos_csv(request):
+def exportar_pedidos_pdf(request):
 
     fecha_inicio = request.GET.get("fecha_inicio")
     fecha_fin = request.GET.get("fecha_fin")
@@ -277,29 +293,38 @@ def exportar_productos_vendidos_csv(request):
     # Validación obligatoria
     if not fecha_inicio or not fecha_fin:
         return HttpResponse("Debe seleccionar un rango de fechas antes de exportar.")
-    
 
-    pedidos = Pedido.objects.all()
+    pedidos = Pedido.objects.all().order_by('-creado_en')
 
     if fecha_inicio and fecha_fin:
         pedidos = pedidos.filter(creado_en__date__range=[fecha_inicio, fecha_fin])
+    
+    total = pedidos.aggregate(total=Sum("total"))["total"] or 0
+    
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="Reporte_pedidos.pdf"'
 
-    productos = (
-        DetallePedido.objects.filter(pedido__in=pedidos)
-        .values('producto__nombre')
-        .annotate(total_vendido=Sum('cantidad'))
-        .order_by('-total_vendido')
-    )
+    doc = SimpleDocTemplate(response, pagesize=letter)
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="productos_mas_vendidos.csv"'
+    data = [["ID", "Cliente", "Fecha", "Total", "Estado"]]
 
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Producto', 'Cantidad Vendida'])
+    for pedido in pedidos:
+        data.append([
+            str(pedido.id),
+            pedido.nombre_cliente,
+            str(pedido.creado_en),
+            f"${pedido.total}",
+            pedido.estado
+        ])
 
-    for p in productos:
-        writer.writerow([p['producto__nombre'], p['total_vendido']])
+    data.append(["", "", "", f"TOTAL: ${total}", ""])
 
+    table = Table(data)
+    table.setStyle([
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
+    ])
+
+    doc.build([table])
     return response
 
 # -------------------------------
