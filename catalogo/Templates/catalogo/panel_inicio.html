@@ -5,11 +5,12 @@
 {% block content %}
 <div class="container my-4">
     <h2 class="mb-4">Panel Administrativo</h2>
+    <p class="text-muted">Resumen de las operaciones del negocio hasta la fecha actual.</p>
 
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
-                <h4>Total ventas</h4>
+                <h4>Venta Bruta</h4>
                 <p class="fs-4">${{ total_ventas }} COP</p>
             </div>
         </div>
@@ -58,6 +59,7 @@
             </tr>
             {% endfor %}
         </tbody>
+
     </table>
 
 </div>

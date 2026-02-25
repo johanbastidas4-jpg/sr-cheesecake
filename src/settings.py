@@ -168,3 +168,5 @@ WOMPI_CHECKOUT_URL = "https://checkout.wompi.co/l/abc123"
 LOGIN_URL = 'admin_login'
 LOGIN_REDIRECT_URL = 'panel_inicio'
 LOGOUT_REDIRECT_URL = 'admin_login'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+

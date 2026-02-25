@@ -13,6 +13,24 @@ import openpyxl
 from reportlab.platypus import SimpleDocTemplate, Table
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image
+)
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet
+from django.conf import settings
+import os
+from datetime import datetime
+
 # -------------------------------
 # LOGIN ADMIN
 # -------------------------------
@@ -306,25 +324,100 @@ def exportar_pedidos_pdf(request):
 
     doc = SimpleDocTemplate(response, pagesize=letter)
 
-    data = [["ID", "Cliente", "Fecha", "Total", "Estado"]]
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    # =====================
+    # LOGO
+    # =====================
+    logo_path = os.path.join(settings.BASE_DIR, "catalogo/static/cliente/img/logo.png")
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=1*inch, height=0.5*inch)
+        logo.hAlign = 'LEFT'
+        elements.append(logo)
+
+    elements.append(Spacer(1, 12))
+
+    # =====================
+    # DATOS NEGOCIO
+    # =====================
+    negocio = Paragraph(
+        "<b>Sr. Cheesecake, inc.</b><br/>"
+        "Dirección: Calle 71 SUR 45A - 43, Sabaneta Antioquia <br/>"
+        "Teléfono: 3222336338 <br/>"
+        "Email: contacto@srcheesecake.com",
+        styles["Normal"]
+    )
+    elements.append(negocio)
+
+    elements.append(Spacer(1, 20))
+
+    # =====================
+    # TÍTULO REPORTE
+    # =====================
+    titulo = Paragraph(
+        "<b>REPORTE DE PEDIDOS</b>",
+        styles["Heading1"]
+    )
+    elements.append(titulo)
+
+    elements.append(Spacer(1, 12))
+
+    fecha_generacion = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    rango = Paragraph(
+        f"Fecha de generación: {fecha_generacion}",
+        styles["Normal"]
+    )
+    elements.append(rango)
+
+    elements.append(Spacer(1, 20))
+
+    # =====================
+    # TABLA DATOS
+    # =====================
+    data = [["ID", "Cliente", "Fecha", "Estado", "Total"]]
 
     for pedido in pedidos:
         data.append([
             str(pedido.id),
             pedido.nombre_cliente,
-            str(pedido.creado_en),
-            f"${pedido.total}",
-            pedido.estado
+            pedido.creado_en.strftime("%d/%m/%Y"),
+            pedido.estado,
+            f"${pedido.total}"
         ])
 
-    data.append(["", "", "", f"TOTAL: ${total}", ""])
+    data.append(["", "", "", "TOTAL GENERAL:", f"${total}"])
 
-    table = Table(data)
-    table.setStyle([
-        ("GRID", (0,0), (-1,-1), 1, colors.black)
-    ])
+    table = Table(data, repeatRows=1)
 
-    doc.build([table])
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+        ("ALIGN", (4,1), (4,-1), "RIGHT"),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.black),
+        ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
+        ("FONTSIZE", (0,0), (-1,-1), 9),
+        ("BOTTOMPADDING", (0,0), (-1,0), 10),
+        ("BACKGROUND", (0,-1), (-1,-1), colors.lightgrey),
+    ]))
+
+    elements.append(table)
+
+    elements.append(Spacer(1, 30))
+
+    # =====================
+    # PIE DE PÁGINA
+    # =====================
+    footer = Paragraph(
+        "Documento generado automáticamente por el sistema administrativo. Sr. Cheesecake, inc. © 2026 Todos los derechos reservados.",
+        styles["Italic"]
+    )
+
+    elements.append(footer)
+
+    doc.build(elements)
     return response
 
 # -------------------------------
@@ -439,7 +532,7 @@ def admin_detalle_pedido(request, pedido_id):
         pedido.estado = request.POST.get("estado")
         pedido.save()
         messages.success(request, f"El estado del pedido #{pedido.id} fue actualizado correctamente a {pedido.estado} ")
-        return redirect('admin_detalle_pedido', pedido_id=pedido.id)
+        return redirect('admin_pedidos')
     
     return render(request, 'catalogo/admin_detalle_pedido.html', {
         'pedido': pedido,
@@ -461,9 +554,9 @@ def editar_inventario(request, producto_id):
         if nueva_cantidad.isdigit():
             producto.inventario.cantidad = int(nueva_cantidad)
             producto.inventario.save()
-
-        return redirect('admin_inventario')
-
+            messages.success(request, f"La cantidad del producto {producto.nombre} fue actualizada correctamente a {nueva_cantidad} unidades.")
+        return redirect('admin_inventario') 
+    
     return render(request, 'catalogo/editar_inventario.html', {
         'producto': producto
     })
