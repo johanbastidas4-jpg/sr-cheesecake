@@ -30,6 +30,11 @@ from reportlab.lib.styles import getSampleStyleSheet
 from django.conf import settings
 import os
 from datetime import datetime
+from django.utils import timezone
+from django.db.models import Sum
+from datetime import timedelta
+import json
+
 
 # -------------------------------
 # LOGIN ADMIN
@@ -472,6 +477,7 @@ def confirmacion_pedido(request, pedido_id):
 
 @user_passes_test(es_admin)
 def panel_inicio(request):
+    hoy = timezone.now().date()
     # Total de ventas
     total_ventas = Pedido.objects.aggregate(total=Sum('total'))['total'] or 0
     # Número de pedidos
@@ -486,14 +492,48 @@ def panel_inicio(request):
         .annotate(total_vendido=Sum('cantidad'))
         .order_by('-total_vendido')[:5]
     )
+    # Últimos 7 días
+    labels_7, ventas_7 = [], []
+    for i in range(7):
+        dia = hoy - timedelta(days=6-i)
+        total = Pedido.objects.filter(creado_en__date=dia).aggregate(Sum('total'))['total__sum'] or 0
+        labels_7.append(dia.strftime("%d/%m"))
+        ventas_7.append(float(total)) 
 
-    return render(request, 'catalogo/panel_inicio.html', {
+    # Último mes (por semana)
+    labels_30, ventas_30 = [], []
+    for i in range(4):
+        inicio = hoy - timedelta(days=(3-i)*7)
+        fin = hoy - timedelta(days=(4-i)*7)
+        total = Pedido.objects.filter(creado_en__date__range=[fin, inicio]).aggregate(Sum('total'))['total__sum'] or 0
+        labels_30.append(f"Semana {i+1}")
+        ventas_30.append(float(total))
+
+    # Últimos 6 meses (por mes)
+    labels_6m, ventas_6m = [], []
+    for i in range(6):
+        mes = (hoy.month - i - 1) % 12 + 1
+        año = hoy.year if hoy.month - i > 0 else hoy.year - 1
+        total = Pedido.objects.filter(creado_en__year=año, creado_en__month=mes).aggregate(Sum('total'))['total__sum'] or 0
+        labels_6m.insert(0, f"{mes}/{año}")
+        ventas_6m.insert(0, float(total))
+
+    context = {
         'total_ventas': total_ventas,
         'total_pedidos': total_pedidos,
         'promedio_pedido': promedio_pedido,
         'productos_mas_vendidos': productos_mas_vendidos,
-    })
+        "labels_7": labels_7,
+        "ventas_7": ventas_7,
+        "labels_30": labels_30,
+        "ventas_30": ventas_30,
+        "labels_6m": labels_6m,
+        "ventas_6m": ventas_6m,
+    }
+    return render(request, 'catalogo/panel_inicio.html', context)
 
+
+    
 @user_passes_test(es_admin)
 def admin_pedidos(request):
     # Marcar todos los pedidos como vistos 

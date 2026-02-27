@@ -7,6 +7,7 @@
     <h2 class="mb-4">Panel Administrativo</h2>
     <p class="text-muted">Resumen de las operaciones del negocio hasta la fecha actual.</p>
 
+    <!-- Métricas principales -->
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
@@ -14,14 +15,12 @@
                 <p class="fs-4">${{ total_ventas }} COP</p>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
                 <h4>Total pedidos</h4>
                 <p class="fs-4">{{ total_pedidos }}</p>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
                 <h4>Ticket promedio</h4>
@@ -30,16 +29,24 @@
         </div>
     </div>
 
-    <div class="d-flex gap-3">
+    <!-- Nueva sección: Gráfica de ventas -->
+    <h4 class="mb-3">Comportamiento de ventas</h4>
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-outline-primary btn-sm me-2" onclick="cargarGrafica('7')">Últimos 7 días</button>
+        <button class="btn btn-outline-primary btn-sm me-2" onclick="cargarGrafica('30')">Último mes</button>
+        <button class="btn btn-outline-primary btn-sm" onclick="cargarGrafica('6m')">Últimos 6 meses</button>
+    </div>
+    <canvas id="ventasChart" height="120"></canvas>
+
+    <!-- Botones de navegación -->
+    <div class="d-flex gap-3 mt-4">
         <a href="{% url 'admin_pedidos' %}" class="btn btn-primary-custom">Ver pedidos</a>
         <a href="{% url 'admin_inventario' %}" class="btn btn-light-custom">Inventario</a>
         <a href="{% url 'admin_reportes' %}" class="btn btn-light-custom">Reportes</a>
-        
     </div>
 
     <!-- Productos más vendidos -->
     <h4 class="mt-4 mb-3">Top 5 productos más vendidos</h4>
-
     <table class="table table-striped">
         <thead>
             <tr>
@@ -59,8 +66,64 @@
             </tr>
             {% endfor %}
         </tbody>
-
     </table>
-
 </div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+console.log("El bloque scripts se está ejecutando");
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Pasar datos como JSON seguro -->
+{{ labels_7|json_script:"labels7" }}
+{{ ventas_7|json_script:"ventas7" }}
+{{ labels_30|json_script:"labels30" }}
+{{ ventas_30|json_script:"ventas30" }}
+{{ labels_6m|json_script:"labels6m" }}
+{{ ventas_6m|json_script:"ventas6m" }}
+
+<script>
+let chart;
+
+function cargarGrafica(rango) {
+  let labels, data;
+  if (rango === '7') {
+    labels = JSON.parse(document.getElementById('labels7').textContent);
+    data = JSON.parse(document.getElementById('ventas7').textContent);
+  } else if (rango === '30') {
+    labels = JSON.parse(document.getElementById('labels30').textContent);
+    data = JSON.parse(document.getElementById('ventas30').textContent);
+  } else {
+    labels = JSON.parse(document.getElementById('labels6m').textContent);
+    data = JSON.parse(document.getElementById('ventas6m').textContent);
+  }
+
+  console.log("Labels:", labels);
+  console.log("Data:", data);
+
+  if (chart) chart.destroy();
+  const ctx = document.getElementById('ventasChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Ventas',
+        data: data,
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13,110,253,0.1)',
+        tension: 0.3
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+}
+
+// Inicializar con últimos 7 días
+cargarGrafica('7');
+</script>
 {% endblock %}
